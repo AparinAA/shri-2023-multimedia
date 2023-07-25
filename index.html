@@ -1,70 +1,188 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta
-        name="viewport"
-        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
-    />
-    <title>Stories</title>
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+        />
+        <title>Stories</title>
 
-    <link rel="stylesheet" href="http://localhost:3000/index.css" />
-</head>
+        <link rel="stylesheet" href="http://localhost:3000/index.css" />
+    </head>
 
-<body>
-<div class="container">
-    <div class="progress">
-        <!-- script inserted progress-bars -->
-    </div>
-    <div class="stories" onclick="togglePlay()">
-        <!-- script inserted stories -->
-    </div>
-    <div class="controls">
-        <button>Предыдущий</button>
-        <button>Следующий</button>
+    <body>
+        <div class="container">
+            <div class="progress">
+                <!-- script inserted progress-bars -->
+            </div>
+            <div class="stories" onclick="togglePlay()">
+                <!-- script inserted stories -->
+            </div>
+            <div class="controls">
+                <button class="button prev" onclick="prev()"><</button>
+                <button class="button next" onclick="next()">></button>
 
-        <div>
-            <label for="brightness-input">Яркость</label>
-            <input type="range" id="brightness-input" />
-            <label for="brightness-input" id="brightness-input-value">1</label>
+                <div class="filters intensity">
+                    <label for="brightness-input">Яркость</label>
+                    <input type="range" id="brightness-input" />
+                    <label for="brightness-input" id="brightness-input-value">1</label>
+                </div>
+                <div class="filters contrast">
+                    <label for="contrast-input">Контраст</label>
+                    <input type="range" id="contrast-input" />
+                    <label for="contrast-input" id="contrast-input-value">1</label>
+                </div>
+            </div>
         </div>
-        <div>
-            <label for="contrast-input">Контраст</label>
-            <input type="range" id="contrast-input" />
-            <label for="contrast-input" id="contrast-input-value">1</label>
-        </div>
-    </div>
-</div>
 
-<script>
-    const videosSrc = [
-        'http://localhost:3000/vids/1.mp4',
-        'http://localhost:3000/vids/2.mp4',
-        'http://localhost:3000/vids/3.mp4',
-        'http://localhost:3000/vids/4.mp4',
-        'http://localhost:3000/vids/5.mp4',
-    ];
+        <script>
+            const videosSrc = [
+                { src: 'http://localhost:3000/vids/1.mp4', idBar: null },
+                { src: 'http://localhost:3000/vids/2.mp4', idBar: null },
+                { src: 'http://localhost:3000/vids/3.mp4', idBar: null },
+                { src: 'http://localhost:3000/vids/4.mp4', idBar: null },
+                { src: 'http://localhost:3000/vids/5.mp4', idBar: null },
+            ];
 
-    const MAX_SLIDER_WIDTH = 400;
+            const MAX_SLIDER_WIDTH = 400;
 
-    const progressContainer = document.querySelector('.progress');
-    const slider = document.querySelector('.stories');
+            const progressContainer = document.querySelector('.progress');
+            const slider = document.querySelector('.stories');
 
-    function initStory(id, src) {
-        slider.insertAdjacentHTML(
-            'beforeend',
-            `<div class="stories__story">
-                        <video id="video-${id}" class="stories__video" src="${src}"></video>
-                    </div>`,
-        );
+            function initStory(id, src) {
+                slider.insertAdjacentHTML(
+                    'beforeend',
+                    `<div class="stories__story">
+                                      <video id="video-${id}" class="stories__video" src="${src}" autoplay muted hidden onended="onEnd(${id})" onplay="onPlay(${id})" onpause="onPause(${id})"></video>
+                                  </div>`,
+                );
 
-        progressContainer.insertAdjacentHTML(
-            'beforeend',
-            `<span class="progress__bar">
-                        <span id="progress-${id}" class="progress__bar-value"></span>
-                    </span>`,
-        );
-    }
-</script>
-</body>
+                progressContainer.insertAdjacentHTML(
+                    'beforeend',
+                    `<span class="progress__bar">
+                                      <span id="progress-${id}" class="progress__bar-value"></span>
+                                  </span>`,
+                );
+            }
+
+            videosSrc.forEach((video, i) => initStory(i, video.src));
+
+            const firstVideo = slider.querySelector('video');
+            firstVideo.hidden = false;
+
+            function togglePlay() {
+                const allStories = slider.querySelectorAll('.stories__video');
+                let currentID = 0;
+                for (let node of allStories) {
+                    if (!node.hidden) {
+                        currentID = node?.id?.split('-')?.[1] ?? 0;
+                    }
+                }
+
+                const video = slider.querySelector(`#video-${currentID}`);
+
+                if (!video.paused) {
+                    videosSrc[currentID].idBar.pause();
+                    video.pause();
+                } else {
+                    videosSrc[currentID].idBar.play();
+                    video.play();
+                }
+            }
+
+            function next(event) {
+                const allStories = slider.querySelectorAll('.stories__video');
+                const len = videosSrc?.length;
+                let currentID = 0;
+
+                for (let node of allStories) {
+                    if (!node.hidden) {
+                        currentID = node?.id?.split('-')?.[1] ?? 0;
+                    }
+                }
+
+                const nextID = (+currentID + 1) % len;
+
+                slider.querySelector(`#video-${currentID}`).hidden = true;
+                slider.querySelector(`#video-${currentID}`).pause();
+                if (nextID === 0) {
+                    videosSrc.forEach((item) => {
+                        item.idBar.cancel();
+                        item.idBar = null;
+                    });
+                } else {
+                    videosSrc[currentID].idBar.finish();
+                }
+
+                slider.querySelector(`#video-${nextID}`).hidden = false;
+                slider.querySelector(`#video-${nextID}`).load();
+            }
+
+            function prev() {
+                const allStories = slider.querySelectorAll('.stories__video');
+                const len = videosSrc?.length;
+
+                if (!len) {
+                    return;
+                }
+
+                if (len > 1) {
+                    let currentID = 0;
+                    for (let node of allStories) {
+                        if (!node.hidden) {
+                            currentID = node?.id?.split('-')?.[1] ?? 0;
+                        }
+                    }
+
+                    const prevID = currentID - 1 < 0 ? 0 : currentID - 1;
+
+                    slider.querySelector(`#video-${currentID}`).hidden = true;
+                    slider.querySelector(`#video-${currentID}`).pause();
+                    videosSrc[currentID].idBar.pause();
+                    videosSrc[currentID].idBar.cancel();
+                    videosSrc[currentID].idBar = null;
+
+                    slider.querySelector(`#video-${prevID}`).hidden = false;
+                    slider.querySelector(`#video-${prevID}`).muted = false;
+                    slider.querySelector(`#video-${prevID}`).load();
+                    videosSrc[prevID].idBar.play();
+                }
+            }
+
+            function onEnd(id) {
+                next();
+            }
+
+            function onPlay(id) {
+                if (!videosSrc[id].idBar) {
+                    const video = slider.querySelector(`#video-${id}`);
+
+                    const promiseVideo = video.play();
+
+                    promiseVideo.then(() => {
+                        const videoTime = video.duration;
+                        videosSrc[id].idBar = progressContainer
+                            .querySelector(`#progress-${id}`)
+                            .animate([{ width: '0' }, { width: '100%' }], {
+                                duration: videoTime * 1000,
+                                iterations: 1,
+                                delay: 0,
+                                fill: 'forwards',
+                            });
+
+                        videosSrc[id].idBar.play();
+                    });
+                } else {
+                    videosSrc[id].idBar.play();
+                }
+            }
+
+            function onPause(id) {
+                if (videosSrc[id].idBar) {
+                    videosSrc[id].idBar.pause();
+                }
+            }
+        </script>
+    </body>
 </html>
