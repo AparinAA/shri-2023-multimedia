@@ -54,7 +54,7 @@
                 slider.insertAdjacentHTML(
                     'beforeend',
                     `<div class="stories__story">
-                                      <video id="video-${id}" class="stories__video" src="${src}" autoplay muted hidden  onended="onEnd(${id})" onplay="onPlay(${id})" onpause="onPause(${id})"></video>
+                                      <video id="video-${id}" class="stories__video" src="${src}" autoplay muted hidden playsinline onended="onEnd(${id})" onplay="onPlay(${id})" onpause="onPause(${id})"></video>
                                   </div>`,
                 );
 
