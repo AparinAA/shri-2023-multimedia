@@ -54,7 +54,7 @@
                 slider.insertAdjacentHTML(
                     'beforeend',
                     `<div class="stories__story">
-                                      <video id="video-${id}" class="stories__video" src="${src}" autoplay muted hidden playsinline onended="onEnd(${id})" onplay="onPlay(${id})" onpause="onPause(${id})"></video>
+                                      <video id="video-${id}" class="stories__video" src="${src}" autoplay muted hidden  onended="onEnd(${id})" onplay="onPlay(${id})" onpause="onPause(${id})"></video>
                                   </div>`,
                 );
 
@@ -117,6 +117,9 @@
 
                 slider.querySelector(`#video-${nextID}`).hidden = false;
                 slider.querySelector(`#video-${nextID}`).load();
+                slider.querySelector(`#video-${nextID}`).play();
+
+                slider.querySelector(`#video-${nextID}`).muted = false;
             }
 
             function prev() {
@@ -144,7 +147,6 @@
                     videosSrc[currentID].idBar = null;
 
                     slider.querySelector(`#video-${prevID}`).hidden = false;
-                    slider.querySelector(`#video-${prevID}`).muted = false;
                     slider.querySelector(`#video-${prevID}`).load();
                     videosSrc[prevID].idBar.play();
                 }
