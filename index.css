@@ -19,6 +19,7 @@ body {
 
 .container {
     display: flex;
+    /* flex-direction: column; */
     justify-content: center;
     width: 100vw;
     max-width: 400px;
@@ -58,7 +59,7 @@ label {
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
-
+    background-color: rgb(255, 255, 255);
     z-index: 1;
 }
 
@@ -117,4 +118,8 @@ label {
 }
 
 .contrast {
+}
+
+.stories__video {
+    filter: brightness(1);
 }

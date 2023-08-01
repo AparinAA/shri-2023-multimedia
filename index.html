@@ -25,13 +25,25 @@
 
                 <div class="filters intensity">
                     <label for="brightness-input">Яркость</label>
-                    <input type="range" id="brightness-input" />
-                    <label for="brightness-input" id="brightness-input-value">1</label>
+                    <input
+                        type="range"
+                        id="brightness-input"
+                        min="0"
+                        max="300"
+                        value="100"
+                    />
+                    <label for="brightness-input" id="brightness-input-value"></label>
                 </div>
                 <div class="filters contrast">
                     <label for="contrast-input">Контраст</label>
-                    <input type="range" id="contrast-input" />
-                    <label for="contrast-input" id="contrast-input-value">1</label>
+                    <input
+                        type="range"
+                        id="contrast-input"
+                        min="0"
+                        max="300"
+                        value="100"
+                    />
+                    <label for="contrast-input" id="contrast-input-value"></label>
                 </div>
             </div>
         </div>
@@ -71,7 +83,7 @@
             const firstVideo = slider.querySelector('video');
             firstVideo.hidden = false;
 
-            function togglePlay() {
+            function currentVideoId() {
                 const allStories = slider.querySelectorAll('.stories__video');
                 let currentID = 0;
                 for (let node of allStories) {
@@ -79,6 +91,13 @@
                         currentID = node?.id?.split('-')?.[1] ?? 0;
                     }
                 }
+
+                return currentID;
+            }
+
+            function togglePlay() {
+                const allStories = slider.querySelectorAll('.stories__video');
+                let currentID = currentVideoId();
 
                 const video = slider.querySelector(`#video-${currentID}`);
 
@@ -94,13 +113,7 @@
             function next(event) {
                 const allStories = slider.querySelectorAll('.stories__video');
                 const len = videosSrc?.length;
-                let currentID = 0;
-
-                for (let node of allStories) {
-                    if (!node.hidden) {
-                        currentID = node?.id?.split('-')?.[1] ?? 0;
-                    }
-                }
+                let currentID = currentVideoId();
 
                 const nextID = (+currentID + 1) % len;
 
@@ -120,6 +133,8 @@
                 slider.querySelector(`#video-${nextID}`).play();
 
                 slider.querySelector(`#video-${nextID}`).muted = false;
+
+                resetFilterValues('brightness', 'contrast');
             }
 
             function prev() {
@@ -131,12 +146,7 @@
                 }
 
                 if (len > 1) {
-                    let currentID = 0;
-                    for (let node of allStories) {
-                        if (!node.hidden) {
-                            currentID = node?.id?.split('-')?.[1] ?? 0;
-                        }
-                    }
+                    let currentID = currentVideoId();
 
                     const prevID = currentID - 1 < 0 ? 0 : currentID - 1;
 
@@ -144,11 +154,12 @@
                     slider.querySelector(`#video-${currentID}`).pause();
                     videosSrc[currentID].idBar.pause();
                     videosSrc[currentID].idBar.cancel();
-                    videosSrc[currentID].idBar = null;
 
                     slider.querySelector(`#video-${prevID}`).hidden = false;
                     slider.querySelector(`#video-${prevID}`).load();
                     videosSrc[prevID].idBar.play();
+
+                    resetFilterValues('brightness', 'contrast');
                 }
             }
 
@@ -185,6 +196,44 @@
                     videosSrc[id].idBar.pause();
                 }
             }
+
+            function resetOneFilterValue(nameField) {
+                if (document.getElementById(`${nameField}-input`)?.value !== undefined) {
+                    document.getElementById(`${nameField}-input`).value = '100';
+                }
+
+                if (
+                    document.getElementById(`${nameField}-input-value`)?.innerHTML !==
+                    undefined
+                ) {
+                    document.getElementById(`${nameField}-input-value`).innerHTML = '1';
+                }
+            }
+
+            function resetFilterValues(...args) {
+                args?.forEach(resetOneFilterValue);
+            }
+
+            function filterControl(nameField) {
+                const field = document.getElementById(`${nameField}-input`);
+                const fieldValue = document.getElementById(`${nameField}-input-value`);
+
+                field.addEventListener('input', (event) => {
+                    const value = Number(event.target.value) || 100;
+
+                    const currentID = currentVideoId();
+
+                    const currentVideo = slider.querySelector(`#video-${currentID}`);
+
+                    fieldValue.innerHTML = value / 100;
+                    currentVideo.style.filter = `${nameField}(${value / 100})`;
+                });
+            }
+
+            resetFilterValues('brightness', 'contrast');
+
+            filterControl('brightness');
+            filterControl('contrast');
         </script>
     </body>
 </html>
