@@ -92,7 +92,7 @@
                     }
                 }
 
-                return currentID;
+                return Number(currentID);
             }
 
             function togglePlay() {
@@ -110,7 +110,7 @@
                 }
             }
 
-            function next(event) {
+            function next() {
                 const allStories = slider.querySelectorAll('.stories__video');
                 const len = videosSrc?.length;
                 let currentID = currentVideoId();
@@ -125,6 +125,7 @@
                         item.idBar = null;
                     });
                 } else {
+                    console.info(currentID, nextID, videosSrc[currentID].idBar);
                     videosSrc[currentID].idBar.finish();
                 }
 
@@ -168,28 +169,24 @@
             }
 
             function onPlay(id) {
+                console.info(id, videosSrc[id]);
                 if (!videosSrc[id].idBar) {
                     const video = slider.querySelector(`#video-${id}`);
-
                     const promiseVideo = video.play();
 
-                    promiseVideo
-                        .then(() => {
-                            const videoTime = video.duration;
-                            videosSrc[id].idBar = progressContainer
-                                .querySelector(`#progress-${id}`)
-                                .animate([{ width: '0' }, { width: '100%' }], {
-                                    duration: videoTime * 1000,
-                                    iterations: 1,
-                                    delay: 0,
-                                    fill: 'forwards',
-                                });
+                    promiseVideo.then(() => {
+                        const videoTime = video.duration;
+                        videosSrc[id].idBar = progressContainer
+                            .querySelector(`#progress-${id}`)
+                            .animate([{ width: '0' }, { width: '100%' }], {
+                                duration: videoTime * 1000,
+                                iterations: 1,
+                                delay: 0,
+                                fill: 'forwards',
+                            });
 
-                            videosSrc[id].idBar.play();
-                        })
-                        .catch((e) => {
-                            console.error('error play video');
-                        });
+                        videosSrc[id].idBar.play();
+                    });
                 } else {
                     videosSrc[id].idBar.play();
                 }
@@ -238,6 +235,34 @@
 
             filterControl('brightness');
             filterControl('contrast');
+
+            function addListener(currentID) {
+                let start;
+                let end;
+
+                const currentVideo = slider.querySelector(`#video-${currentID}`);
+
+                currentVideo.addEventListener('touchstart', (event) => {
+                    start = event.changedTouches[0].clientX;
+                });
+
+                currentVideo.addEventListener('touchend', (event) => {
+                    end = event.changedTouches[0].clientX;
+
+                    console.info(start, end);
+                    if (Number(start) > Number(end)) {
+                        // next();
+                        return;
+                    }
+
+                    if (Number(start) < Number(end)) {
+                        prev();
+                        return;
+                    }
+                });
+            }
+
+            videosSrc.forEach((item, i) => addListener(i));
         </script>
     </body>
 </html>
