@@ -173,19 +173,23 @@
 
                     const promiseVideo = video.play();
 
-                    promiseVideo.then(() => {
-                        const videoTime = video.duration;
-                        videosSrc[id].idBar = progressContainer
-                            .querySelector(`#progress-${id}`)
-                            .animate([{ width: '0' }, { width: '100%' }], {
-                                duration: videoTime * 1000,
-                                iterations: 1,
-                                delay: 0,
-                                fill: 'forwards',
-                            });
+                    promiseVideo
+                        .then(() => {
+                            const videoTime = video.duration;
+                            videosSrc[id].idBar = progressContainer
+                                .querySelector(`#progress-${id}`)
+                                .animate([{ width: '0' }, { width: '100%' }], {
+                                    duration: videoTime * 1000,
+                                    iterations: 1,
+                                    delay: 0,
+                                    fill: 'forwards',
+                                });
 
-                        videosSrc[id].idBar.play();
-                    });
+                            videosSrc[id].idBar.play();
+                        })
+                        .catch((e) => {
+                            console.error('error play video');
+                        });
                 } else {
                     videosSrc[id].idBar.play();
                 }
